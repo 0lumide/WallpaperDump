@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardCornerRadius="2dp"
+    app:cardBackgroundColor="@color/colorPrimaryDark"
+    app:cardUseCompatPadding="true"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+    <RelativeLayout
+        android:background="@color/colorPrimaryDark"
+        android:orientation="vertical"
+        android:paddingTop="2dp"
+        android:paddingLeft="2dp"
+        android:paddingRight="2dp"
+        android:paddingBottom="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <co.mide.imagegridlayout.ImageGridLayout
+            android:layout_marginTop="2dp"
+            android:id="@+id/grid_layout"
+            android:layout_width="match_parent"
+            app:maxImageCount="4"
+            android:layout_height="250dp">
+            <ImageView
+                android:layout_width="match_parent"
+                android:src="@drawable/v42kwa9"
+                android:layout_height="match_parent" />
+            <ImageView
+                android:layout_width="match_parent"
+                android:src="@drawable/nnqo1zl"
+                android:layout_height="match_parent" />
+            <ImageView
+                android:layout_width="match_parent"
+                android:src="@drawable/hyxf1j7"
+                android:layout_height="match_parent" />
+            <ImageView
+                android:layout_width="match_parent"
+                android:src="@drawable/ensbfu"
+                android:layout_height="match_parent" />
+            <ImageView
+                android:layout_width="match_parent"
+                android:src="@drawable/v42kwa9"
+                android:layout_height="match_parent" />
+            <ImageView
+                android:layout_width="match_parent"
+                android:src="@drawable/v42kwa9"
+                android:layout_height="match_parent" />
+        </co.mide.imagegridlayout.ImageGridLayout>
+        <TextView
+            android:textSize="11sp"
+            android:layout_marginTop="2dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:textColor="@color/colorFadedText"
+            android:id="@+id/post_time"
+            android:layout_width="wrap_content"
+            android:text="19 hours ago"
+            android:layout_below="@+id/grid_layout"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:layout_below="@+id/post_time"
+            android:id="@+id/title"
+            android:textSize="16sp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:textColor="@color/colorPrimaryText"
+            android:layout_width="wrap_content"
+            android:text="Random wallpapers from my dump"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:textSize="12sp"
+            android:paddingEnd="5dp"
+            android:paddingRight="5dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:textColor="@color/colorFadedText"
+            android:layout_width="wrap_content"
+            android:layout_below="@+id/title"
+            android:id="@+id/by"
+            android:text="@string/by"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:textSize="12sp"
+            android:maxLines="1"
+            android:id="@+id/username"
+            android:layout_toRightOf="@+id/by"
+            android:layout_toEndOf="@+id/by"
+            android:layout_width="wrap_content"
+            android:text="@string/sample_username"
+            android:ellipsize="end"
+            android:layout_below="@+id/title"
+            android:layout_height="wrap_content" />
+        <ImageView
+            android:src="@drawable/ic_disco_white_36dp"
+            android:scaleType="matrix"
+            android:layout_width="100dp"
+            android:background="@drawable/ribbon"
+            android:layout_height="72dp" />
+    </RelativeLayout>
+</android.support.v7.widget.CardView>
