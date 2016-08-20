@@ -16,39 +16,20 @@
         android:paddingBottom="10dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+        <!--<View-->
+            <!--android:layout_marginTop="2dp"-->
+            <!--android:id="@+id/grid_layout"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="250dp"/>-->
         <co.mide.imagegridlayout.ImageGridLayout
             android:layout_marginTop="2dp"
             android:id="@+id/grid_layout"
             android:layout_width="match_parent"
-            app:maxImageCount="4"
-            android:layout_height="250dp">
-            <ImageView
-                android:layout_width="match_parent"
-                android:src="@drawable/v42kwa9"
-                android:layout_height="match_parent" />
-            <ImageView
-                android:layout_width="match_parent"
-                android:src="@drawable/nnqo1zl"
-                android:layout_height="match_parent" />
-            <ImageView
-                android:layout_width="match_parent"
-                android:src="@drawable/hyxf1j7"
-                android:layout_height="match_parent" />
-            <ImageView
-                android:layout_width="match_parent"
-                android:src="@drawable/ensbfu"
-                android:layout_height="match_parent" />
-            <ImageView
-                android:layout_width="match_parent"
-                android:src="@drawable/v42kwa9"
-                android:layout_height="match_parent" />
-            <ImageView
-                android:layout_width="match_parent"
-                android:src="@drawable/v42kwa9"
-                android:layout_height="match_parent" />
-        </co.mide.imagegridlayout.ImageGridLayout>
+            app:maxImageCount="@integer/image_count"
+            app:moreColor="#0f0f0f"
+            android:layout_height="250dp"/>
         <TextView
-            android:textSize="11sp"
+            android:textSize="12sp"
             android:layout_marginTop="2dp"
             android:layout_marginLeft="10dp"
             android:layout_marginStart="10dp"
@@ -70,10 +51,12 @@
             android:layout_height="wrap_content" />
         <TextView
             android:textSize="12sp"
-            android:paddingEnd="5dp"
-            android:paddingRight="5dp"
             android:layout_marginLeft="10dp"
             android:layout_marginStart="10dp"
+            android:paddingEnd="5dp"
+            android:paddingRight="5dp"
+            android:paddingStart="0dp"
+            android:paddingLeft="0dp"
             android:textColor="@color/colorFadedText"
             android:layout_width="wrap_content"
             android:layout_below="@+id/title"
@@ -82,19 +65,22 @@
             android:layout_height="wrap_content" />
         <TextView
             android:textSize="12sp"
-            android:maxLines="1"
             android:id="@+id/username"
-            android:layout_toRightOf="@+id/by"
             android:layout_toEndOf="@+id/by"
+            android:layout_toRightOf="@+id/by"
             android:layout_width="wrap_content"
             android:text="@string/sample_username"
-            android:ellipsize="end"
             android:layout_below="@+id/title"
             android:layout_height="wrap_content" />
         <ImageView
             android:src="@drawable/ic_disco_white_36dp"
             android:scaleType="matrix"
+            android:paddingEnd="64dp"
+            android:paddingRight="64dp"
+            android:paddingStart="0dp"
+            android:paddingLeft="0dp"
             android:layout_width="100dp"
+            android:visibility="gone"
             android:background="@drawable/ribbon"
             android:layout_height="72dp" />
     </RelativeLayout>

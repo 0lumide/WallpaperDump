@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorPrimary"
+    android:id="@+id/swipe_refresh_layout"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="co.mide.wallpaperdump.MainActivity"
     tools:showIn="@layout/activity_main">
-    <LinearLayout
-        android:orientation="vertical"
+    <co.mide.wallpaperdump.views.EmptyRecyclerView
+        android:id="@+id/recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <include layout="@layout/layout_dump_card"/>
-        <include layout="@layout/layout_dump_card"/>
-        <include layout="@layout/layout_dump_card"/>
-    </LinearLayout>
-</android.support.v4.widget.NestedScrollView>
+        android:layout_height="match_parent"/>
+</android.support.v4.widget.SwipeRefreshLayout>

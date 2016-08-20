@@ -1,8 +1,10 @@
 <resources>
     <string name="app_name">Wallpaper Dump</string>
     <string name="action_settings">Settings</string>
-    <string name="by">By</string>
-    <string name="sample_username"><a href="http://imgur.com/user/SheEatsPoop">SheEatsPoop</a></string>
+    <string name="by">By:</string>
+    <string name="sample_username">SeraPls</string>
+    <string name="gallery_title">%1$d of %2$d</string>
+    <string name="set_wallpaper">Set as wallpaper</string>
     <string name="lorem">
         "Material is the metaphor.\n\n"
 
@@ -93,5 +95,6 @@
         "when a user tries to pick up one of cards.\n\n\n\n\n"
     </string>
     <string name="title_activity_blacklist">Blacklist</string>
+    <string name="title_activity_gallery">Gallery</string>
     <string name="title_activity_delete">Delete</string>
 </resources>
