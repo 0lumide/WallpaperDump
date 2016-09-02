@@ -9,7 +9,6 @@ import co.mide.wallpaperdump.model.Wallpaper;
 
 /**
  * Class to populate databases during dev stage and in testing
- * Created by Olumide on 8/13/2016.
  */
 public class FakeData {
     final public static String[] DUMP_IDS = new String[]{"DWqVI", "aucam", "805OS", "TJlsJ", "ZsLbh", "j83Wo",

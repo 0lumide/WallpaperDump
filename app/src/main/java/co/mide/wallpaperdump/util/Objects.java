@@ -8,7 +8,6 @@ import java.util.List;
 
 /**
  * Wrapper class for the Objects class that uses custom implementation for api level < 19
- * Created by Olumide on 8/2/2016.
  */
 @SuppressWarnings("unused")
 public class Objects {

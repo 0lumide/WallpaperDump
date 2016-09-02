@@ -18,8 +18,6 @@ import co.mide.wallpaperdump.model.Wallpaper;
 
 /**
  * Wrapper class for handling database queries
- * Created by Olumide on 2/2/2015.
- * Modified on 8/6/2016.
  */
 public class DatabaseHandler extends SQLiteOpenHelper{
     private static final String DB_NAME = "WALLPAPER_DUMP";

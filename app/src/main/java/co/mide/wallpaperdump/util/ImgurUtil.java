@@ -4,7 +4,6 @@ import android.support.annotation.NonNull;
 
 /**
  * A basic Imgur Utility class
- * Created by Olumide on 8/25/2016.
  */
 public class ImgurUtil {
     public static String userProfileLinkFromId(@NonNull String userId){

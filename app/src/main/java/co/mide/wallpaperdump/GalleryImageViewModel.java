@@ -15,7 +15,6 @@ import uk.co.senab.photoview.PhotoViewAttacher;
 
 /**
  * ViewModel for a single gallery Image instance
- * Created by Olumide on 8/24/2016.
  */
 public class GalleryImageViewModel extends BaseObservable {
     PhotoViewAttacher.OnViewTapListener viewTapListener;

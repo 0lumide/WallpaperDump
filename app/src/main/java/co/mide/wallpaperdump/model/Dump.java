@@ -7,7 +7,6 @@ import co.mide.wallpaperdump.util.Objects;
 
 /**
  * Class used to represent a Wallpaper Dump
- * Created by Olumide on 8/2/2016.
  */
 @SuppressWarnings("unused")
 public class Dump {

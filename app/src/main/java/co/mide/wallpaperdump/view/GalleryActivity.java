@@ -28,7 +28,6 @@ public class GalleryActivity extends AppCompatActivity implements GalleryViewMod
     public static final String DUMP_INDEX = "DUMP_INDEX";
     public static final String WALLPAPER_INDEX = "WALLPAPER_INDEX";
     public static final String WALLPAPER_ID = "WALLPAPER_ID";
-    int wallpaperIndex;
     ActivityGalleryBinding binding;
     ViewPagerAdapter adapter;
     Dump dump;
@@ -37,11 +36,12 @@ public class GalleryActivity extends AppCompatActivity implements GalleryViewMod
     protected void onCreate(Bundle savedInstanceState) {
         //postpone transition till viewpager is ready
         ActivityCompat.postponeEnterTransition(this);
+
         super.onCreate(savedInstanceState);
 
 
         final int dumpIndex = getIntent().getIntExtra(DUMP_INDEX, -1);
-        wallpaperIndex = getIntent().getIntExtra(WALLPAPER_INDEX, -1);
+        final int wallpaperIndex = getIntent().getIntExtra(WALLPAPER_INDEX, -1);
         final String wallpaperID = getIntent().getStringExtra(WALLPAPER_ID);
 
         final DatabaseHandler databaseHandler = DatabaseHandler.getInstance(this);
@@ -137,7 +137,9 @@ public class GalleryActivity extends AppCompatActivity implements GalleryViewMod
     }
 
     public void exit(){
-        if(wallpaperIndex == binding.viewPager.getCurrentItem()){
+        //pageIndex is zero based but pageNumber isn't
+        int pageIndex = binding.getViewModel().getCurrentPageNum() - 1;
+        if(pageIndex == binding.viewPager.getCurrentItem()){
             ActivityCompat.finishAfterTransition(this);
         }else{
             finish();

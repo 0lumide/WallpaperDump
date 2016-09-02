@@ -7,7 +7,6 @@ import co.mide.wallpaperdump.model.Dump;
 
 /**
  * View model for the gallery
- * Created by Olumide on 8/24/2016.
  */
 public class GalleryViewModel extends BaseObservable{
     int currentPageNum;

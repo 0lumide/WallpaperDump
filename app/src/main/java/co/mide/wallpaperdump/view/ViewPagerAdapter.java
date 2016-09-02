@@ -17,7 +17,6 @@ import co.mide.wallpaperdump.model.Wallpaper;
 
 /**
  * Adapter for the gallery viewpager
- * Created by Olumide on 8/15/2016.
  */
 @SuppressWarnings("unused")
 public class ViewPagerAdapter extends PagerAdapter {

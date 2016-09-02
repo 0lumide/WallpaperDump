@@ -14,7 +14,6 @@ import co.mide.wallpaperdump.model.Dump;
 
 /**
  * Adapter for the recycler view
- * Created by Olumide on 8/9/2016.
  */
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewBindingHolder> {
     Activity activity;

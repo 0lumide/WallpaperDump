@@ -8,7 +8,6 @@ import co.mide.wallpaperdump.util.Objects;
 
 /**
  * Class used to represent a single image in a wallpaper dump
- * Created by Olumide on 8/2/2016.
  */
 @SuppressWarnings("unused")
 public class Wallpaper  {

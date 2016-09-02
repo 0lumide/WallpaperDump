@@ -28,7 +28,6 @@ import co.mide.wallpaperdump.view.GalleryActivity;
 
 /**
  * View model for dump cardView
- * Created by Olumide on 8/25/2016.
  */
 public class DumpCardViewModel extends BaseObservable {
     Dump dump;
