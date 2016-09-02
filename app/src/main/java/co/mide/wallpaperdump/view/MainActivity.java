@@ -1,56 +1,54 @@
-package co.mide.wallpaperdump;
+package co.mide.wallpaperdump.view;
 
 import android.content.Intent;
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import co.mide.wallpaperdump.db.DBHandlerResponse;
+import co.mide.wallpaperdump.FakeData;
+import co.mide.wallpaperdump.R;
+import co.mide.wallpaperdump.databinding.ActivityMainBinding;
 import co.mide.wallpaperdump.db.DatabaseHandler;
-import co.mide.wallpaperdump.views.EmptyRecyclerView;
-import co.mide.wallpaperdump.views.RecyclerAdapter;
 
 public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener{
     static DatabaseHandler databaseHandler;
+    ActivityMainBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
-        setupDatabase();
+        setSupportActionBar(binding.toolbar);
 
-        ((SwipeRefreshLayout)findViewById(R.id.swipe_refresh_layout)).setOnRefreshListener(this);
-        ((EmptyRecyclerView)findViewById(R.id.recycler_view)).setLayoutManager(new LinearLayoutManager(this));
-        ((SwipeRefreshLayout)findViewById(R.id.swipe_refresh_layout)).setColorSchemeResources(R.color.colorAccent);
+        databaseHandler = DatabaseHandler.getInstance(this);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        //todo delete for loop when wallpaper dump api is implemented
+        if(databaseHandler.getDumpCount() == 0) {
+            for (int i = 0; i < 100; i++) {
+                databaseHandler.addToDumpTable(FakeData.createFakeDump(databaseHandler));
+            }
+        }
+        binding.content.recyclerView.setAdapter(new RecyclerAdapter(MainActivity.this, databaseHandler));
+
+        binding.content.swipeRefreshLayout.setOnRefreshListener(this);
+        binding.content.recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        binding.content.swipeRefreshLayout.setColorSchemeResources(R.color.colorAccent);
+
+        binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
                 Intent i = new Intent(MainActivity.this, BlacklistActivity.class);
                 startActivity(i);
-            }
-        });
-    }
-
-    private void setupDatabase(){
-        databaseHandler = DatabaseHandler.getInstance(this, new DBHandlerResponse(){
-            public void onDBReady(DatabaseHandler dbHandler){
-                ((EmptyRecyclerView)findViewById(R.id.recycler_view)).setAdapter(new RecyclerAdapter(MainActivity.this, dbHandler));
             }
         });
     }
@@ -63,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                ((SwipeRefreshLayout)findViewById(R.id.swipe_refresh_layout)).setRefreshing(false);
+                binding.content.swipeRefreshLayout.setRefreshing(false);
             }
         }, 2000);
     }
@@ -88,13 +86,5 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public @NonNull View findViewById(int id){
-        View view = super.findViewById(id);
-        if(view == null)
-            throw new IllegalArgumentException("View "+id+" doesn't exist");
-        return view;
     }
 }

@@ -1,4 +1,4 @@
-package co.mide.wallpaperdump.views;
+package co.mide.wallpaperdump.view;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;

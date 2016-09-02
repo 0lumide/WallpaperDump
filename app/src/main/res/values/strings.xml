@@ -2,9 +2,14 @@
     <string name="app_name">Wallpaper Dump</string>
     <string name="action_settings">Settings</string>
     <string name="by">By:</string>
+    <string name="sample_title">Random wallpapers from my dump</string>
+    <string name="sample_time">19 hours ago</string>
     <string name="sample_username">SeraPls</string>
     <string name="gallery_title">%1$d of %2$d</string>
     <string name="set_wallpaper">Set as wallpaper</string>
+    <string name="single_dump">Single Dump</string>
+
+    <string name="current_dump_description">Image banner signifying that this is the Wallpaper Dump currently in use</string>
     <string name="lorem">
         "Material is the metaphor.\n\n"
 

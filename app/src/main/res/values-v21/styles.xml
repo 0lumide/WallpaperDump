@@ -1,16 +1,25 @@
 <resources>
 
-    <style name="AppTheme.NoActionBar.BlackBackground">
+    <style name="AppTheme.NoActionBar.Gallery">
         <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:statusBarColor">@android:color/transparent</item>
+
+        <!--<item name="android:windowTranslucentStatus">true</item>-->
+        <item name="android:windowActionBarOverlay">true</item>
+        <!--<item name="android:windowFullscreen">true</item>-->
+        <item name="android:windowTranslucentNavigation">true</item>
+        <!--<item name="android:immersive">true</item>-->
+        <!--<item name="android:windowDrawsSystemBarBackgrounds">true</item>-->
     </style>
 
-    <style name="AppTheme.NoActionBar">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
-        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <item name="android:statusBarColor">@color/colorPrimaryDark</item>
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
 
+        <item name="android:windowBackground">@color/colorPrimary</item>
+        <item name="android:statusBarColor">@color/colorPrimaryDark</item>
 
         <!-- enable window content transitions -->
         <item name="android:windowActivityTransitions">true</item>
@@ -26,5 +35,10 @@
         <item name="android:windowSharedElementExitTransition">
             @transition/change_image_transform
         </item>
+    </style>
+
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
     </style>
 </resources>

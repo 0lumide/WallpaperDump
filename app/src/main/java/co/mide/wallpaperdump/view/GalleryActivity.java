@@ -1,18 +1,16 @@
-package co.mide.wallpaperdump;
+package co.mide.wallpaperdump.view;
 
-import android.app.WallpaperManager;
-import android.graphics.drawable.ColorDrawable;
-import android.net.Uri;
+import android.animation.Animator;
+import android.content.Context;
+import android.content.Intent;
+import android.databinding.DataBindingUtil;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.SharedElementCallback;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,19 +18,19 @@ import android.view.View;
 import java.util.List;
 import java.util.Map;
 
+import co.mide.wallpaperdump.GalleryViewModel;
+import co.mide.wallpaperdump.R;
+import co.mide.wallpaperdump.databinding.ActivityGalleryBinding;
 import co.mide.wallpaperdump.db.DatabaseHandler;
 import co.mide.wallpaperdump.model.Dump;
-import co.mide.wallpaperdump.views.ViewPagerAdapter;
 
-public class GalleryActivity extends AppCompatActivity implements View.OnClickListener{
+public class GalleryActivity extends AppCompatActivity implements GalleryViewModel.ToolbarToggler{
     public static final String DUMP_INDEX = "DUMP_INDEX";
     public static final String WALLPAPER_INDEX = "WALLPAPER_INDEX";
     public static final String WALLPAPER_ID = "WALLPAPER_ID";
     int wallpaperIndex;
-    ViewPager viewPager;
+    ActivityGalleryBinding binding;
     ViewPagerAdapter adapter;
-    View decorView;
-    int currentPage;
     Dump dump;
 
     @Override
@@ -40,24 +38,24 @@ public class GalleryActivity extends AppCompatActivity implements View.OnClickLi
         //postpone transition till viewpager is ready
         ActivityCompat.postponeEnterTransition(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_gallery);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setShowHideAnimationEnabled(true);
+
 
         final int dumpIndex = getIntent().getIntExtra(DUMP_INDEX, -1);
         wallpaperIndex = getIntent().getIntExtra(WALLPAPER_INDEX, -1);
-        currentPage = wallpaperIndex;
         final String wallpaperID = getIntent().getStringExtra(WALLPAPER_ID);
 
-        viewPager = (ViewPager) findViewById(R.id.view_pager);
-        final DatabaseHandler databaseHandler = MainActivity.databaseHandler;
+        final DatabaseHandler databaseHandler = DatabaseHandler.getInstance(this);
         dump = databaseHandler.getDump(dumpIndex);
-        adapter = new ViewPagerAdapter(GalleryActivity.this, this, dump);
-        viewPager.setAdapter(adapter);
-        viewPager.setCurrentItem(wallpaperIndex, false);
-        setGalleryTitle(wallpaperIndex);
+
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_gallery);
+        binding.setViewModel(new GalleryViewModel(wallpaperIndex+1, dump, this));
+
+        setSupportActionBar(binding.toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        adapter = new ViewPagerAdapter(databaseHandler, binding.getViewModel());
+        binding.viewPager.setAdapter(adapter);
+        binding.viewPager.setCurrentItem(wallpaperIndex, false);
 
         setEnterSharedElementCallback(new SharedElementCallback() {
             @Override
@@ -69,78 +67,65 @@ public class GalleryActivity extends AppCompatActivity implements View.OnClickLi
 
         ActivityCompat.startPostponedEnterTransition(GalleryActivity.this);
 
-        decorView = getWindow().getDecorView();
         setupActionBarListener();
-        setupPageChangeListener();
-        toggleSystemUi();
     }
 
-    private void setGalleryTitle(int position){
-        getSupportActionBar().setTitle(getResources().getString(R.string.gallery_title,
-                position+1, dump.getImages().size()));
-    }
-
-    private void setupPageChangeListener(){
-        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-                currentPage = position;
-                setGalleryTitle(position);
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-
-            }
-        });
+    public static Intent getStartIntent(Context context, String wallpaperId, int dumpIndex, int wallpaperIndex){
+        Intent intent = new Intent(context, GalleryActivity.class);
+        intent.putExtra(DUMP_INDEX, dumpIndex);
+        intent.putExtra(WALLPAPER_INDEX, wallpaperIndex);
+        intent.putExtra(WALLPAPER_ID, wallpaperId);
+        return intent;
     }
 
     private void setupActionBarListener(){
-        decorView.setOnSystemUiVisibilityChangeListener
+        getWindow().getDecorView().setOnSystemUiVisibilityChangeListener
                 (new View.OnSystemUiVisibilityChangeListener() {
                     @Override
                     public void onSystemUiVisibilityChange(int visibility) {
                         if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-                            int color = ContextCompat.getColor(GalleryActivity.this, R.color.colorBlackTransparent);
-                            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(color));
                             getSupportActionBar().show();
+                            binding.toolbar.animate().setListener(null);
+                            binding.toolbar.animate().translationY(0).setDuration(100).start();
                         } else {
-                            getSupportActionBar().hide();
-                            int color = ContextCompat.getColor(GalleryActivity.this, R.color.transparent);
-                            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(color));
+                            binding.toolbar.animate().translationY(-binding.toolbar.getHeight()).setDuration(100).setListener(new Animator.AnimatorListener() {
+                                @Override
+                                public void onAnimationStart(Animator animator) {}
+
+                                @Override
+                                public void onAnimationEnd(Animator animator) {
+                                    getSupportActionBar().hide();
+                                }
+
+                                @Override
+                                public void onAnimationCancel(Animator animator) {
+                                    getSupportActionBar().hide();
+                                }
+
+                                @Override
+                                public void onAnimationRepeat(Animator animator) {}
+                            }).start();
                         }
                     }
                 });
     }
 
-    @Override
-    public void onClick(View view){
-        toggleSystemUi();
-    }
-
-    void toggleSystemUi(){
+    public void toggleShowToolbar(){
         if(getSupportActionBar().isShowing()) {
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                 int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
                         | View.SYSTEM_UI_FLAG_FULLSCREEN; // hide status bar
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
                     uiOptions = uiOptions | View.SYSTEM_UI_FLAG_IMMERSIVE;
-                decorView.setSystemUiVisibility(uiOptions);
+                getWindow().getDecorView().setSystemUiVisibility(uiOptions);
             }
         }else{
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                decorView.setSystemUiVisibility(
+                getWindow().getDecorView().setSystemUiVisibility(
                         View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                                 | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
             }
         }
@@ -152,7 +137,7 @@ public class GalleryActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     public void exit(){
-        if(wallpaperIndex == viewPager.getCurrentItem()){
+        if(wallpaperIndex == binding.viewPager.getCurrentItem()){
             ActivityCompat.finishAfterTransition(this);
         }else{
             finish();
@@ -181,12 +166,6 @@ public class GalleryActivity extends AppCompatActivity implements View.OnClickLi
                 exit();
                 return(true);
             case R.id.manual_set_wallpaper:
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    Uri uri = Uri.parse("http://i.imgur.com/"+dump.getImages().get(currentPage)+".jpg");
-                    WallpaperManager.getInstance(this).getCropAndSetWallpaperIntent(uri);
-                }else{
-                    throw new IllegalStateException("This menu should be deactivated");
-                }
                 break;
         }
 
@@ -195,6 +174,10 @@ public class GalleryActivity extends AppCompatActivity implements View.OnClickLi
 
     @Override
     public @NonNull ActionBar getSupportActionBar(){
-        return super.getSupportActionBar();
+        ActionBar actionBar = super.getSupportActionBar();
+        if(actionBar == null){
+            throw new IllegalArgumentException("Support action bar doesn't exist");
+        }
+        return actionBar;
     }
 }

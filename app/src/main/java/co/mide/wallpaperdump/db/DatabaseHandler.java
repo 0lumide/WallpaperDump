@@ -5,16 +5,14 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.os.AsyncTask;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
-import co.mide.wallpaperdump.FakeData;
 import co.mide.wallpaperdump.model.Dump;
 import co.mide.wallpaperdump.model.Wallpaper;
 
@@ -23,52 +21,24 @@ import co.mide.wallpaperdump.model.Wallpaper;
  * Created by Olumide on 2/2/2015.
  * Modified on 8/6/2016.
  */
-@SuppressWarnings("unused")
-public class DatabaseHandler extends SQLiteOpenHelper implements DBAsyncResponse{
+public class DatabaseHandler extends SQLiteOpenHelper{
     private static final String DB_NAME = "WALLPAPER_DUMP";
     private static final int VERSION = 1;
-    private boolean isDBReady = false;
-    private Context context;
-    private DBHandlerResponse dbHandlerResponse;
     private static DatabaseHandler databaseHandler = null;
 
-    private DatabaseHandler(@NonNull Context context, @NonNull DBHandlerResponse dbHandlerResponse){
+    private DatabaseHandler(@NonNull Context context){
         // The constructor is setup this way to prevent casting errors if used incorrectly
-        super(context, DB_NAME, null, VERSION);
-        this.context = context;
-        this.dbHandlerResponse = dbHandlerResponse;
+        super(context.getApplicationContext(), DB_NAME, null, VERSION);
         //Use Writable Db for both reading and writing. It's easier and simpler
-        AsyncGetWritableDB asyncGetWritableDB = new AsyncGetWritableDB(this, this);
-        asyncGetWritableDB.execute();
+        getWritableDatabase();
     }
 
-    public static synchronized DatabaseHandler getInstance(@NonNull Context context, @NonNull DBHandlerResponse dbHandlerResponse){
+    public static synchronized DatabaseHandler getInstance(@NonNull Context context){
         if(databaseHandler == null) {
-            databaseHandler = new DatabaseHandler(context.getApplicationContext(), dbHandlerResponse);
-        }else{
-
-            databaseHandler.dbHandlerResponse = dbHandlerResponse;
-            //Use Writable Db for both reading and writing. It's easier and simpler
-            AsyncGetWritableDB asyncGetWritableDB = new AsyncGetWritableDB(databaseHandler, databaseHandler);
-            asyncGetWritableDB.execute();
+            databaseHandler = new DatabaseHandler(context.getApplicationContext());
         }
+
         return databaseHandler;
-    }
-
-    public boolean isDBReady(){
-        return isDBReady;
-    }
-
-    @Override
-    //this method is called after onCreate and onUpgrade if they're called
-    public void processFinish(SQLiteDatabase db){
-        isDBReady = true;
-        if(getDumpCount() == 0){
-            for(int i = 0; i < 100; i++){
-                addToDumpTable(createFakeDump(i));
-            }
-        }
-        dbHandlerResponse.onDBReady(this);
     }
 
     @Override
@@ -77,37 +47,6 @@ public class DatabaseHandler extends SQLiteOpenHelper implements DBAsyncResponse
         db.execSQL(DumpTable.CREATE_TABLE);
         //create wallpaper table
         db.execSQL(WallpaperTable.CREATE_TABLE);
-    }
-
-    private Dump createFakeDump(int index){
-        int i = index % 11;
-
-        Dump dump = new Dump();
-        dump.setDumpId(FakeData.dumpIds[i]);
-        dump.setUploadedBy(FakeData.uploaders[i]);
-        dump.setTimestamp(System.currentTimeMillis()-(long)(Math.random()*10000000000L));
-        dump.setIsNSFW(Math.round(Math.random())==1);
-        List<String> wallpapers = new LinkedList<>();
-
-        int limit = 50 + (int)(Math.random()*50);
-        for(int f = 0; f < limit; f++){
-            List<String> tags = new LinkedList<>();
-            for(int e = 0; e < 10; e++){
-                tags.add(FakeData.tagCloud[(int)(Math.random()*FakeData.tagCloud.length)]);
-            }
-
-            Wallpaper wallpaper = new Wallpaper();
-            wallpaper.setIsNSFW(Math.round(Math.random())==1);
-            wallpaper.setImageId(FakeData.imageIds[(int)(Math.random()*FakeData.imageIds.length)]);
-            wallpaper.setTags(tags);
-
-            addToWallpaperTable(wallpaper);
-
-            wallpapers.add(wallpaper.getImageId());
-        }
-        dump.setImages(wallpapers);
-
-        return dump;
     }
 
     @Override
@@ -120,8 +59,6 @@ public class DatabaseHandler extends SQLiteOpenHelper implements DBAsyncResponse
      * @return Cursor for the Wallpaper table
      */
     Cursor getWallpaperCursor(){
-        if(!isDBReady)
-            throw new IllegalStateException("Database not yet ready");
         return getWritableDatabase().rawQuery(WallpaperTable.QUERY_SELECT_ALL, null);
     }
 
@@ -131,18 +68,54 @@ public class DatabaseHandler extends SQLiteOpenHelper implements DBAsyncResponse
      * @return Cursor for the Dump table
      */
     Cursor getDumpCursor(){
-        if(!isDBReady)
-            throw new IllegalStateException("Database not yet ready");
         return getWritableDatabase().rawQuery(DumpTable.QUERY_SELECT_ALL, null);
     }
 
-    public Wallpaper getWallpaper(String wallpaperId){
-        if(!isDBReady)
-            throw new IllegalStateException("Database not yet ready");
+    public void deleteAllWallpaperTableRows(){
+        getWritableDatabase().delete(WallpaperTable.TABLE_NAME, null, null);
+    }
 
-        Cursor cursor = getWritableDatabase().rawQuery(WallpaperTable.selectRowByImageId(wallpaperId), null);
-        if(cursor == null || !cursor.moveToFirst())
-            throw new IllegalArgumentException("Wallpaper: "+wallpaperId+" doesn't exist");
+    public void deleteAllDumpTableRows(){
+        getWritableDatabase().delete(DumpTable.TABLE_NAME, null, null);
+        getWritableDatabase().execSQL(DumpTable.RESET_PRIMARY_KEY);
+    }
+
+    /**
+     * @return the number of dump entries in the database
+     */
+    public int getDumpCount() {
+        Cursor cursor = getDumpCursor();
+        int count = cursor.getCount();
+        cursor.close();
+        return count;
+    }
+
+    /**
+     * @return the number of wallpaper entries in the database
+     */
+    @SuppressWarnings("unused")
+    public int getWallpaperCount() {
+        Cursor cursor = getWallpaperCursor();
+        int count = cursor.getCount();
+        cursor.close();
+        return count;
+    }
+
+    private Cursor getSingleWallpaperRowCursor(String wallpaperId){
+        return getWritableDatabase().rawQuery(WallpaperTable.selectRowByImageId(wallpaperId), null);
+    }
+
+    /**
+     *
+     * @param wallpaperId the unique id of the wallpaper entry. This is also it's imgur unique id
+     * @return the Wallpaper with the provided wallpaperId
+     */
+    public Wallpaper getWallpaper(String wallpaperId){
+        Cursor cursor = getSingleWallpaperRowCursor(wallpaperId);
+        if(cursor == null || !cursor.moveToFirst()) {
+            if(cursor != null) cursor.close();
+            throw new IllegalArgumentException("Wallpaper: " + wallpaperId + " doesn't exist");
+        }
 
         Wallpaper wallpaper = new Wallpaper();
         //IMAGE_ID | CLARIFAI_IS_NSFW | TAGS |
@@ -154,13 +127,6 @@ public class DatabaseHandler extends SQLiteOpenHelper implements DBAsyncResponse
         return wallpaper;
     }
 
-    public int getDumpCount() {
-        Cursor cursor = getDumpCursor();
-        int count = cursor.getCount();
-        cursor.close();
-        return count;
-    }
-
     /**
      * Retrieved the Dump stored at the requested index
      * @param index the position of the dump. 0 is the first 1 the second, e.t.c
@@ -169,13 +135,14 @@ public class DatabaseHandler extends SQLiteOpenHelper implements DBAsyncResponse
     public Dump getDump(int index){
         if(index < 0 || index >= getDumpCount())
             throw new IllegalArgumentException(index+" is not a valid index");
+        //In reality the query is not 0 based so we have to increment index by 1
+        index += 1;
 
-        Cursor dumpCursor = getDumpCursor();
-        //check for empty cursor
-        if(!dumpCursor.moveToFirst())
+        Cursor dumpCursor = getWritableDatabase().rawQuery(DumpTable.selectRowByPrimaryKey(index), null);
+        if(dumpCursor == null || !dumpCursor.moveToFirst()) {
+            if(dumpCursor != null) dumpCursor.close();
             throw new IllegalStateException("Something went off the deep end");
-        dumpCursor.moveToPosition(index);
-
+        }
         Dump dump = new Dump();
 
         //INTEGER_ID | ALBUM_ID/DUMP_ID | IS_NSFW | UPLOADER | DUMP_DATE | WALLPAPERS |
@@ -191,18 +158,19 @@ public class DatabaseHandler extends SQLiteOpenHelper implements DBAsyncResponse
 
         dump.setImages(wallpapers);
         dumpCursor.close();
-        dump.setTitle("Dump #"+(index+1));
+        dump.setTitle("Dump #"+index);
         return dump;
     }
 
-    void addToWallpaperTable(Wallpaper wallpaper){
-        if(!isDBReady)
-            throw new IllegalStateException("Database has not been initialized yet");
-        Cursor cursor = getWritableDatabase().rawQuery(WallpaperTable.selectRowByImageId(wallpaper.getImageId()), null);
-        if(cursor.moveToFirst()) {
+    public void addToWallpaperTable(Wallpaper wallpaper){
+        Cursor cursor = getSingleWallpaperRowCursor(wallpaper.getImageId());
+        if(cursor != null && cursor.moveToFirst()){
+            Log.i("dbug", "Wallpaper already exists");
             cursor.close();
+            return;
         }
-        cursor.close();
+        if(cursor != null) cursor.close();
+
         StringBuilder stringBuilder = new StringBuilder();
         for(String tag: wallpaper.getTags()){
             stringBuilder.append(tag);
@@ -214,8 +182,9 @@ public class DatabaseHandler extends SQLiteOpenHelper implements DBAsyncResponse
         //IMAGE_ID | CLARIFAI_IS_NSFW | TAGS |
         ContentValues values = new ContentValues();
         values.put(WallpaperTable.IMAGE_ID, wallpaper.getImageId());
-        values.put(WallpaperTable.CLARIFAI_IS_NSFW, wallpaper.getIsNSFW());
+        values.put(WallpaperTable.CLARIFAI_IS_NSFW, wallpaper.getIsNSFW().toString());
         values.put(WallpaperTable.TAGS, tags);
+        getWritableDatabase().insert(WallpaperTable.TABLE_NAME, null, values);
     }
 
     /**
@@ -223,9 +192,6 @@ public class DatabaseHandler extends SQLiteOpenHelper implements DBAsyncResponse
      * @param dump the dump to be stored
      */
     public void addToDumpTable(Dump dump){
-        if(!isDBReady)
-            throw new IllegalStateException("Database has not been initialized yet");
-
         StringBuilder stringBuilder = new StringBuilder();
         for(String wallpaperId: dump.getImages()){
             stringBuilder.append(wallpaperId);
@@ -242,26 +208,6 @@ public class DatabaseHandler extends SQLiteOpenHelper implements DBAsyncResponse
         values.put(DumpTable.DUMP_DATE, dump.getTimestamp());
         values.put(DumpTable.WALLPAPERS, wallpapers);
         getWritableDatabase().insert(DumpTable.TABLE_NAME, null, values);
-    }
-
-    static class AsyncGetWritableDB extends AsyncTask<Object, Void, SQLiteDatabase> {
-        private DatabaseHandler dbHandler;
-        private DBAsyncResponse delegate = null;
-
-        public AsyncGetWritableDB(DatabaseHandler dbh, DBAsyncResponse delegate){
-            dbHandler = dbh;
-            this.delegate = delegate;
-        }
-        @Override
-        protected SQLiteDatabase doInBackground(Object ... objects) {
-            return dbHandler.getReadableDatabase();
-        }
-
-        @Override
-        protected void onPostExecute(SQLiteDatabase db){
-            if(delegate != null)
-                delegate.processFinish(db);
-        }
     }
 }
 
@@ -303,15 +249,21 @@ class DumpTable{
 
     public static final String QUERY_SELECT_ALL = "SELECT * FROM " + TABLE_NAME;
 
+    public static final String RESET_PRIMARY_KEY = "DELETE FROM SQLITE_SEQUENCE WHERE NAME = '" + DumpTable.TABLE_NAME + "'";
     /**
      * Query that creates a new table
      */
     public static final String CREATE_TABLE = String.format("CREATE TABLE IF NOT EXISTS %s " +
             "(%s INTEGER PRIMARY KEY AUTOINCREMENT, %s TEXT, %s TEXT, %s TEXT, %s INTEGER DEFAULT 0, %s TEXT)",
             TABLE_NAME, INTEGER_ID, DUMP_ID, IMGUR_IS_NSFW, UPLOADER, DUMP_DATE, WALLPAPERS);
-}
 
-interface DBAsyncResponse {
-    void processFinish(SQLiteDatabase db);
-}
+    /**
+     * Returns the query that selects the wanted row from the table
+     * @param index the dump index
+     * @return the query
+     */
+    public static String selectRowByPrimaryKey(int index){
+        return "SELECT * FROM " + TABLE_NAME + " WHERE "+INTEGER_ID+" = '"+index+"'";
+    }
 
+}

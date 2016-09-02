@@ -14,8 +14,14 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="AppTheme.NoActionBar.BlackBackground">
+    <style name="AppTheme.NoActionBar.Gallery">
         <item name="android:windowBackground">@android:color/transparent</item>
+
+        <!--<item name="android:windowTranslucentStatus">true</item>-->
+        <!--<item name="android:windowFullscreen">true</item>-->
+        <item name="android:windowTranslucentNavigation">true</item>
+        <!--<item name="android:immersive">true</item>-->
+        <!--<item name="android:windowDrawsSystemBarBackgrounds">true</item>-->
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />

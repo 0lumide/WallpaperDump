@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="co.mide.wallpaperdump.GalleryActivity">
+    tools:context=".view.GalleryActivity">
     <item
         android:id="@+id/manual_set_wallpaper"
         android:icon="@drawable/ic_disco_white_24dp"
