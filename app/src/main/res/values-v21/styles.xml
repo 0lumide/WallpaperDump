@@ -1,16 +1,5 @@
 <resources>
 
-    <style name="AppTheme.NoActionBar.Gallery">
-        <item name="android:windowBackground">@android:color/transparent</item>
-
-        <!--<item name="android:windowTranslucentStatus">true</item>-->
-        <item name="android:windowActionBarOverlay">true</item>
-        <!--<item name="android:windowFullscreen">true</item>-->
-        <item name="android:windowTranslucentNavigation">true</item>
-        <!--<item name="android:immersive">true</item>-->
-        <!--<item name="android:windowDrawsSystemBarBackgrounds">true</item>-->
-    </style>
-
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat">
         <!-- Customize your theme here. -->
@@ -23,11 +12,22 @@
 
         <!-- enable window content transitions -->
         <item name="android:windowActivityTransitions">true</item>
+    </style>
 
-        <!-- specify enter and exit transitions -->
-        <!--<item name="android:windowEnterTransition">@android:transition/fade</item>-->
-        <!--<item name="android:windowExitTransition">@android:transition/fade</item>-->
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
 
+    <style name="AppTheme.NoActionBar.TransparentStatusBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar.GalleryActivity">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:statusBarColor">@color/colorBlackLessTransparent</item>
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
         <!-- specify shared element transitions -->
         <item name="android:windowSharedElementEnterTransition">
             @transition/change_image_transform
@@ -37,8 +37,19 @@
         </item>
     </style>
 
-    <style name="AppTheme.NoActionBar">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
+    <style name="MainActivity" parent="AppTheme.NoActionBar">
+        <!-- specify shared element transitions -->
+        <item name="android:windowSharedElementEnterTransition">
+            @transition/change_image_transform
+        </item>
+        <item name="android:windowSharedElementExitTransition">
+            @transition/change_image_transform
+        </item>
+    </style>
+
+    <style name="IntroActivity" parent="AppTheme.NoActionBar.TransparentStatusBar">
+        <!-- specify enter and exit transitions -->
+        <item name="android:windowEnterTransition">@android:transition/slide_left</item>
+        <item name="android:windowExitTransition">@android:transition/slide_right</item>
     </style>
 </resources>
