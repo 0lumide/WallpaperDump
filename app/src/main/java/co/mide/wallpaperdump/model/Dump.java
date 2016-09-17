@@ -83,7 +83,7 @@ public class Dump {
 
 
     @Override
-    public String toString(){
+    public String toString() {
         return new Gson().toJson(this);
     }
 
@@ -96,11 +96,15 @@ public class Dump {
             return false;
         }
         Dump dump = (Dump) o;
-        return Objects.equals(dumpId, dump.dumpId) &&
-                Objects.equals(isNSFW, dump.isNSFW) &&
-                Objects.equals(images, dump.images) &&
-                Objects.equals(timestamp, dump.timestamp) &&
-                Objects.equals(uploadedBy, dump.uploadedBy);
+        return Objects.equals(dumpId, dump.dumpId)
+                && Objects.equals(isNSFW, dump.isNSFW)
+                && Objects.equals(images, dump.images)
+                && Objects.equals(timestamp, dump.timestamp)
+                && Objects.equals(uploadedBy, dump.uploadedBy);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(dumpId, isNSFW, images, timestamp, uploadedBy);
     }
 }
-

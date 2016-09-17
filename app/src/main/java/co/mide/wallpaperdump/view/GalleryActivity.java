@@ -23,14 +23,21 @@ import co.mide.wallpaperdump.R;
 import co.mide.wallpaperdump.databinding.ActivityGalleryBinding;
 import co.mide.wallpaperdump.db.DatabaseHandler;
 import co.mide.wallpaperdump.model.Dump;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.subscriptions.CompositeSubscription;
 
-public class GalleryActivity extends AppCompatActivity implements GalleryViewModel.ToolbarToggler{
-    public static final String DUMP_INDEX = "DUMP_INDEX";
-    public static final String WALLPAPER_INDEX = "WALLPAPER_INDEX";
-    public static final String WALLPAPER_ID = "WALLPAPER_ID";
+public class GalleryActivity extends AppCompatActivity {
+    public static final String DUMP_INDEX = "co.mide.wallpaperdump.GalleryActivity.DUMP_INDEX";
+    public static final String WALLPAPER_INDEX =
+            "co.mide.wallpaperdump.GalleryActivity.WALLPAPER_INDEX";
+    public static final String NUM_VISIBLE_VIEWS =
+            "co.mide.wallpaperdump.GalleryActivity.NUM_VISIBLE_VIEWS";
+    public static final int TOOLBAR_ANIMATION_DURATION = 100;
+
     ActivityGalleryBinding binding;
     ViewPagerAdapter adapter;
-    Dump dump;
+    private final CompositeSubscription subscriptions = new CompositeSubscription();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,16 +46,18 @@ public class GalleryActivity extends AppCompatActivity implements GalleryViewMod
 
         super.onCreate(savedInstanceState);
 
+        final DatabaseHandler databaseHandler = DatabaseHandler.getInstance(this);
 
         final int dumpIndex = getIntent().getIntExtra(DUMP_INDEX, -1);
         final int wallpaperIndex = getIntent().getIntExtra(WALLPAPER_INDEX, -1);
-        final String wallpaperID = getIntent().getStringExtra(WALLPAPER_ID);
+        final int numberOfVisibleViews = getIntent().getIntExtra(NUM_VISIBLE_VIEWS, -1);
 
-        final DatabaseHandler databaseHandler = DatabaseHandler.getInstance(this);
-        dump = databaseHandler.getDump(dumpIndex);
+        Dump dump = databaseHandler.getDump(dumpIndex);
+
+        final String wallpaperID = dump.getImages().get(wallpaperIndex);
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_gallery);
-        binding.setViewModel(new GalleryViewModel(wallpaperIndex+1, dump, this));
+        binding.setViewModel(new GalleryViewModel(wallpaperIndex + 1, dump));
 
         setSupportActionBar(binding.toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -60,59 +69,128 @@ public class GalleryActivity extends AppCompatActivity implements GalleryViewMod
         setEnterSharedElementCallback(new SharedElementCallback() {
             @Override
             public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
-                sharedElements.put(wallpaperID, adapter.getCurrentView(wallpaperIndex));
+                names.clear();
+                sharedElements.clear();
+                View sharedView = adapter.getCurrentView(binding.viewPager.getCurrentItem());
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    //on entry getTransitionName returns null for some weird reason
+                    //but it's fine on exit
+                    //just so happens that wallpaperIndex != binding.viewPager.getCurrentItem()
+                    //is only true on exit
+                    String transitionName = wallpaperID;
+                    if (wallpaperIndex != binding.viewPager.getCurrentItem()) {
+                        transitionName = sharedView.getTransitionName();
+                    }
+
+                    if (binding.viewPager.getCurrentItem() < numberOfVisibleViews) {
+                        names.add(transitionName);
+                        sharedElements.put(transitionName, sharedView);
+                    }
+                }
                 super.onMapSharedElements(names, sharedElements);
             }
         });
 
-        ActivityCompat.startPostponedEnterTransition(GalleryActivity.this);
+        ActivityCompat.startPostponedEnterTransition(this);
 
         setupActionBarListener();
     }
 
-    public static Intent getStartIntent(Context context, String wallpaperId, int dumpIndex, int wallpaperIndex){
+    public Subscription subscribeToToggleToolbarVisibility() {
+        return binding.getViewModel().getToggleToolbarVisibilityObservable()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(this::toggleShowToolbar);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        subscriptions.add(subscribeToToggleToolbarVisibility());
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        subscriptions.clear();
+    }
+
+    /**
+     * Static method to create Activity launching intent
+     * @param dumpIndex the index of the dump in the database to be displayed
+     * @param wallpaperIndex the index of the Wallpaper the viewPager should scroll to
+     * @return the intent to start the activity
+     */
+    public static Intent getStartIntent(Context context, int dumpIndex, int wallpaperIndex) {
+        return getStartIntent(context, dumpIndex, wallpaperIndex, -1);
+    }
+
+    /**
+     * Static method to create Activity launching intent
+     * @param dumpIndex the index of the dump in the database to be displayed
+     * @param wallpaperIndex the index of the Wallpaper the viewPager should scroll to
+     * @param numberOfVisibleViews the number of views that are displayed in the gridLayout. It's
+     *                             used in deciding which views to enable exitTransition on
+     * @return the intent to start the activity
+     */
+    public static Intent getStartIntent(Context context, int dumpIndex, int wallpaperIndex,
+                                        int numberOfVisibleViews) {
         Intent intent = new Intent(context, GalleryActivity.class);
         intent.putExtra(DUMP_INDEX, dumpIndex);
         intent.putExtra(WALLPAPER_INDEX, wallpaperIndex);
-        intent.putExtra(WALLPAPER_ID, wallpaperId);
+        intent.putExtra(NUM_VISIBLE_VIEWS, numberOfVisibleViews);
         return intent;
     }
 
-    private void setupActionBarListener(){
-        getWindow().getDecorView().setOnSystemUiVisibilityChangeListener
-                (new View.OnSystemUiVisibilityChangeListener() {
-                    @Override
-                    public void onSystemUiVisibilityChange(int visibility) {
-                        if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-                            getSupportActionBar().show();
-                            binding.toolbar.animate().setListener(null);
-                            binding.toolbar.animate().translationY(0).setDuration(100).start();
-                        } else {
-                            binding.toolbar.animate().translationY(-binding.toolbar.getHeight()).setDuration(100).setListener(new Animator.AnimatorListener() {
-                                @Override
-                                public void onAnimationStart(Animator animator) {}
-
-                                @Override
-                                public void onAnimationEnd(Animator animator) {
-                                    getSupportActionBar().hide();
-                                }
-
-                                @Override
-                                public void onAnimationCancel(Animator animator) {
-                                    getSupportActionBar().hide();
-                                }
-
-                                @Override
-                                public void onAnimationRepeat(Animator animator) {}
-                            }).start();
-                        }
-                    }
-                });
+    private void setupActionBarListener() {
+        View decorView = getWindow().getDecorView();
+        decorView.setOnSystemUiVisibilityChangeListener(visibility -> {
+                if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                    getSupportActionBar().show();
+                    binding.toolbar.animate()
+                            .translationY(0)
+                            .setDuration(TOOLBAR_ANIMATION_DURATION)
+                            .setListener(null)
+                            .start();
+                } else {
+                    binding.toolbar.animate()
+                            .translationY(-binding.toolbar.getHeight())
+                            .setDuration(TOOLBAR_ANIMATION_DURATION)
+                            .setListener(createToolbarHideAnimationListener())
+                            .start();
+                }
+            });
     }
 
-    public void toggleShowToolbar(){
-        if(getSupportActionBar().isShowing()) {
+    private Animator.AnimatorListener createToolbarHideAnimationListener() {
+        return new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animator) { }
 
+            @Override
+            public void onAnimationEnd(Animator animator) {
+                getSupportActionBar().hide();
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animator) {
+                getSupportActionBar().hide();
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animator) { }
+        };
+    }
+
+    void toggleShowToolbar(boolean showToolbar) {
+        if (showToolbar) {
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                getWindow().getDecorView().setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+            }
+        } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                 int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -122,27 +200,6 @@ public class GalleryActivity extends AppCompatActivity implements GalleryViewMod
                     uiOptions = uiOptions | View.SYSTEM_UI_FLAG_IMMERSIVE;
                 getWindow().getDecorView().setSystemUiVisibility(uiOptions);
             }
-        }else{
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                getWindow().getDecorView().setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
-            }
-        }
-    }
-
-    @Override
-    public void onBackPressed(){
-        exit();
-    }
-
-    public void exit(){
-        //pageIndex is zero based but pageNumber isn't
-        int pageIndex = binding.getViewModel().getCurrentPageNum() - 1;
-        if(pageIndex == binding.viewPager.getCurrentItem()){
-            ActivityCompat.finishAfterTransition(this);
-        }else{
-            finish();
         }
     }
 
@@ -154,10 +211,16 @@ public class GalleryActivity extends AppCompatActivity implements GalleryViewMod
     }
 
     @Override
-    public boolean onPrepareOptionsMenu (Menu menu){
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT)
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             menu.findItem(R.id.manual_set_wallpaper).setVisible(false);
+        }
         return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        ActivityCompat.finishAfterTransition(this);
     }
 
     @Override
@@ -165,19 +228,28 @@ public class GalleryActivity extends AppCompatActivity implements GalleryViewMod
         switch (item.getItemId()) {
             //handle on up pressed
             case android.R.id.home:
-                exit();
-                return(true);
+                ActivityCompat.finishAfterTransition(this);
+                return true;
             case R.id.manual_set_wallpaper:
+//                WallpaperManager wallpaperManager;
+//                wallpaperManager = WallpaperManager.getInstance(activity);
+//                int width = wallpaperManager.getDesiredMinimumWidth();
+//                int height = wallpaperManager.getDesiredMinimumHeight();
+//                String img = String.format("http://api.wallpaperdumps.com/v1/image/%dx%d/%s",
+//                        width, height, dump.getImages().get(0));
+                break;
+            default:
                 break;
         }
 
-        return(super.onOptionsItemSelected(item));
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
-    public @NonNull ActionBar getSupportActionBar(){
+    @NonNull
+    public ActionBar getSupportActionBar() {
         ActionBar actionBar = super.getSupportActionBar();
-        if(actionBar == null){
+        if (actionBar == null) {
             throw new IllegalArgumentException("Support action bar doesn't exist");
         }
         return actionBar;

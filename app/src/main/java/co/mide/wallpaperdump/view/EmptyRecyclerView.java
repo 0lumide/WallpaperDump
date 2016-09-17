@@ -14,7 +14,7 @@ import android.view.animation.AlphaAnimation;
 @SuppressWarnings("unused")
 public class EmptyRecyclerView extends RecyclerView {
     private View emptyView;
-    final private AdapterDataObserver observer = new AdapterDataObserver() {
+    private final AdapterDataObserver observer = new AdapterDataObserver() {
         @Override
         public void onChanged() {
             checkIfEmpty();
@@ -47,7 +47,7 @@ public class EmptyRecyclerView extends RecyclerView {
         if (emptyView != null && getAdapter() != null) {
             final boolean emptyViewVisible = getAdapter().getItemCount() == 0;
             float from = emptyView.getAlpha();
-            if(emptyView.getVisibility() != VISIBLE)
+            if (emptyView.getVisibility() != VISIBLE)
                 from = 0.0f;
             float to = emptyViewVisible ? 1.0f : 0.0f;
             AlphaAnimation anim = new AlphaAnimation(from, to);

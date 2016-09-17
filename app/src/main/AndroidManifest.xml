@@ -47,7 +47,7 @@
             android:enabled="true"
             android:exported="false"/>
 
-        <activity android:name=".IntroActivity"
+        <activity android:name=".view.IntroActivity"
             android:theme="@style/IntroActivity"/>
     </application>
 

@@ -19,20 +19,20 @@ import co.mide.wallpaperdump.model.Wallpaper;
 /**
  * Wrapper class for handling database queries
  */
-public class DatabaseHandler extends SQLiteOpenHelper{
+public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String DB_NAME = "WALLPAPER_DUMP";
     private static final int VERSION = 1;
     private static DatabaseHandler databaseHandler = null;
 
-    private DatabaseHandler(@NonNull Context context){
+    private DatabaseHandler(@NonNull Context context) {
         // The constructor is setup this way to prevent casting errors if used incorrectly
         super(context.getApplicationContext(), DB_NAME, null, VERSION);
         //Use Writable Db for both reading and writing. It's easier and simpler
         getWritableDatabase();
     }
 
-    public static synchronized DatabaseHandler getInstance(@NonNull Context context){
-        if(databaseHandler == null) {
+    public static synchronized DatabaseHandler getInstance(@NonNull Context context) {
+        if (databaseHandler == null) {
             databaseHandler = new DatabaseHandler(context.getApplicationContext());
         }
 
@@ -40,7 +40,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
     }
 
     @Override
-    public void onCreate(SQLiteDatabase db){
+    public void onCreate(SQLiteDatabase db) {
         //create dump table
         db.execSQL(DumpTable.CREATE_TABLE);
         //create wallpaper table
@@ -48,7 +48,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion){
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         //do nothing, not yet needed
     }
 
@@ -56,7 +56,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
      * NOTE: remember to close the cursor when done
      * @return Cursor for the Wallpaper table
      */
-    Cursor getWallpaperCursor(){
+    Cursor getWallpaperCursor() {
         return getWritableDatabase().rawQuery(WallpaperTable.QUERY_SELECT_ALL, null);
     }
 
@@ -65,15 +65,15 @@ public class DatabaseHandler extends SQLiteOpenHelper{
      * NOTE: remember to close the cursor when done
      * @return Cursor for the Dump table
      */
-    Cursor getDumpCursor(){
+    Cursor getDumpCursor() {
         return getWritableDatabase().rawQuery(DumpTable.QUERY_SELECT_ALL, null);
     }
 
-    public void deleteAllWallpaperTableRows(){
+    public void deleteAllWallpaperTableRows() {
         getWritableDatabase().delete(WallpaperTable.TABLE_NAME, null, null);
     }
 
-    public void deleteAllDumpTableRows(){
+    public void deleteAllDumpTableRows() {
         getWritableDatabase().delete(DumpTable.TABLE_NAME, null, null);
         getWritableDatabase().execSQL(DumpTable.RESET_PRIMARY_KEY);
     }
@@ -99,7 +99,7 @@ public class DatabaseHandler extends SQLiteOpenHelper{
         return count;
     }
 
-    private Cursor getSingleWallpaperRowCursor(String wallpaperId){
+    private Cursor getSingleWallpaperRowCursor(String wallpaperId) {
         return getWritableDatabase().rawQuery(WallpaperTable.selectRowByImageId(wallpaperId), null);
     }
 
@@ -108,10 +108,10 @@ public class DatabaseHandler extends SQLiteOpenHelper{
      * @param wallpaperId the unique id of the wallpaper entry. This is also it's imgur unique id
      * @return the Wallpaper with the provided wallpaperId
      */
-    public Wallpaper getWallpaper(String wallpaperId){
+    public Wallpaper getWallpaper(String wallpaperId) {
         Cursor cursor = getSingleWallpaperRowCursor(wallpaperId);
-        if(cursor == null || !cursor.moveToFirst()) {
-            if(cursor != null) cursor.close();
+        if (cursor == null || !cursor.moveToFirst()) {
+            if (cursor != null) cursor.close();
             throw new IllegalArgumentException("Wallpaper: " + wallpaperId + " doesn't exist");
         }
 
@@ -130,15 +130,16 @@ public class DatabaseHandler extends SQLiteOpenHelper{
      * @param index the position of the dump. 0 is the first 1 the second, e.t.c
      * @return the Dump at the specified index.
      */
-    public Dump getDump(int index){
-        if(index < 0 || index >= getDumpCount())
-            throw new IllegalArgumentException(index+" is not a valid index");
+    public Dump getDump(int index) {
+        if (index < 0 || index >= getDumpCount())
+            throw new IllegalArgumentException(index + " is not a valid index");
         //In reality the query is not 0 based so we have to increment index by 1
         index += 1;
 
-        Cursor dumpCursor = getWritableDatabase().rawQuery(DumpTable.selectRowByPrimaryKey(index), null);
-        if(dumpCursor == null || !dumpCursor.moveToFirst()) {
-            if(dumpCursor != null) dumpCursor.close();
+        Cursor dumpCursor = getWritableDatabase()
+                .rawQuery(DumpTable.selectRowByPrimaryKey(index), null);
+        if (dumpCursor == null || !dumpCursor.moveToFirst()) {
+            if (dumpCursor != null) dumpCursor.close();
             throw new IllegalStateException("Something went off the deep end");
         }
         Dump dump = new Dump();
@@ -156,26 +157,26 @@ public class DatabaseHandler extends SQLiteOpenHelper{
 
         dump.setImages(wallpapers);
         dumpCursor.close();
-        dump.setTitle("Dump #"+index);
+        dump.setTitle("Dump #" + index);
         return dump;
     }
 
-    public void addToWallpaperTable(Wallpaper wallpaper){
+    public void addToWallpaperTable(Wallpaper wallpaper) {
         Cursor cursor = getSingleWallpaperRowCursor(wallpaper.getImageId());
-        if(cursor != null && cursor.moveToFirst()){
+        if (cursor != null && cursor.moveToFirst()) {
             Log.i("dbug", "Wallpaper already exists");
             cursor.close();
             return;
         }
-        if(cursor != null) cursor.close();
+        if (cursor != null) cursor.close();
 
-        StringBuilder stringBuilder = new StringBuilder();
-        for(String tag: wallpaper.getTags()){
-            stringBuilder.append(tag);
-            stringBuilder.append(',');
+        StringBuilder builder = new StringBuilder();
+        for (String tag : wallpaper.getTags()) {
+            builder.append(tag);
+            builder.append(',');
         }
         //trim off the trailing comma
-        String tags = stringBuilder.length() > 0 ? stringBuilder.substring(0, stringBuilder.length() - 1): "";
+        String tags = builder.length() > 0 ? builder.substring(0, builder.length() - 1) : "";
 
         //IMAGE_ID | CLARIFAI_IS_NSFW | TAGS |
         ContentValues values = new ContentValues();
@@ -189,14 +190,14 @@ public class DatabaseHandler extends SQLiteOpenHelper{
      * Adds the dump at the end of the database
      * @param dump the dump to be stored
      */
-    public void addToDumpTable(Dump dump){
-        StringBuilder stringBuilder = new StringBuilder();
-        for(String wallpaperId: dump.getImages()){
-            stringBuilder.append(wallpaperId);
-            stringBuilder.append(',');
+    public void addToDumpTable(Dump dump) {
+        StringBuilder builder = new StringBuilder();
+        for (String wallpaperId : dump.getImages()) {
+            builder.append(wallpaperId);
+            builder.append(',');
         }
         //trim off the trailing comma
-        String wallpapers = stringBuilder.length() > 0 ? stringBuilder.substring(0, stringBuilder.length() - 1): "";
+        String wallpapers = builder.length() > 0 ? builder.substring(0, builder.length() - 1) : "";
 
         //INTEGER_ID | ALBUM_ID/DUMP_ID | IS_NSFW | UPLOADER | DUMP_DATE | WALLPAPERS |
         ContentValues values = new ContentValues();
@@ -209,7 +210,10 @@ public class DatabaseHandler extends SQLiteOpenHelper{
     }
 }
 
-class WallpaperTable{
+class WallpaperTable {
+    private WallpaperTable() {
+
+    }
     //IMAGE_ID | CLARIFAI_IS_NSFW | TAGS |
     public static final String TABLE_NAME = "WALLPAPER_TABLE";
     public static final String IMAGE_ID = "IMAGE_ID";
@@ -230,12 +234,16 @@ class WallpaperTable{
      * @param id the image id
      * @return the query
      */
-    public static String selectRowByImageId(String id){
-        return "SELECT * FROM " + WallpaperTable.TABLE_NAME + " WHERE "+WallpaperTable.IMAGE_ID+" = '"+id+"'";
+    public static String selectRowByImageId(String id) {
+        return String.format("SELECT * FROM %s WHERE %s = '%s'", TABLE_NAME, IMAGE_ID, id);
     }
 }
 
-class DumpTable{
+class DumpTable {
+    private DumpTable() {
+
+    }
+
     //INTEGER_ID | ALBUM_ID/DUMP_ID | IS_NSFW | UPLOADER | DUMP_DATE | WALLPAPERS |
     public static final String TABLE_NAME = "DUMP_TABLE";
     public static final String DUMP_ID = "DUMP_ID";
@@ -247,21 +255,24 @@ class DumpTable{
 
     public static final String QUERY_SELECT_ALL = "SELECT * FROM " + TABLE_NAME;
 
-    public static final String RESET_PRIMARY_KEY = "DELETE FROM SQLITE_SEQUENCE WHERE NAME = '" + DumpTable.TABLE_NAME + "'";
+    public static final String RESET_PRIMARY_KEY =
+            "DELETE FROM SQLITE_SEQUENCE WHERE NAME = '" + DumpTable.TABLE_NAME + "'";
     /**
      * Query that creates a new table
      */
-    public static final String CREATE_TABLE = String.format("CREATE TABLE IF NOT EXISTS %s " +
-            "(%s INTEGER PRIMARY KEY AUTOINCREMENT, %s TEXT, %s TEXT, %s TEXT, %s INTEGER DEFAULT 0, %s TEXT)",
-            TABLE_NAME, INTEGER_ID, DUMP_ID, IMGUR_IS_NSFW, UPLOADER, DUMP_DATE, WALLPAPERS);
+    public static final String CREATE_TABLE =
+            String.format("CREATE TABLE IF NOT EXISTS %s (%s INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + " %s TEXT, %s TEXT, %s TEXT, %s INTEGER DEFAULT 0, %s TEXT)",
+                    TABLE_NAME, INTEGER_ID, DUMP_ID, IMGUR_IS_NSFW, UPLOADER, DUMP_DATE,
+                    WALLPAPERS);
 
     /**
      * Returns the query that selects the wanted row from the table
      * @param index the dump index
      * @return the query
      */
-    public static String selectRowByPrimaryKey(int index){
-        return "SELECT * FROM " + TABLE_NAME + " WHERE "+INTEGER_ID+" = '"+index+"'";
+    public static String selectRowByPrimaryKey(int index) {
+        return "SELECT * FROM " + TABLE_NAME + " WHERE " + INTEGER_ID + " = '" + index + "'";
     }
 
 }

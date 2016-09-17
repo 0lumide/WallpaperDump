@@ -11,42 +11,80 @@ import co.mide.wallpaperdump.model.Wallpaper;
  * Class to populate databases during dev stage and in testing
  */
 public class FakeData {
-    final public static String[] DUMP_IDS = new String[]{"DWqVI", "aucam", "805OS", "TJlsJ", "ZsLbh", "j83Wo",
-            "aYmiE", "dZ1FB", "Eqr4x", "YEY7J", "sT75g"};
+    private FakeData() {
 
-    final public static String[] UPLOADERS = new String[]{"pinkwaffle", "neoncactus", "ANewPhotoshoppedPictureOfCeraEveryday",
-            "edgeisjustokay", "firefoxislikethatunclewhothinksheisstillcool", "chromemasterrace",
-            "HalfLife3Confirmed", "PinapleBuffet", "AndroidVsiPhone", "WhatIsWindowsPhone", "HarleyQuin"};
+    }
+
+    final public static String[] DUMP_IDS = new String[]{"DWqVI", "aucam", "805OS", "TJlsJ",
+            "ZsLbh", "j83Wo", "aYmiE", "dZ1FB", "Eqr4x", "YEY7J", "sT75g"};
+
+    final public static String[] UPLOADERS = new String[]{"pinkwaffle", "neoncactus",
+            "ANewPhotoshoppedPictureOfCeraEveryday", "edgeisjustokay",
+            "firefoxislikethatunclewhothinksheisstillcool", "chromemasterrace",
+            "HalfLife3Confirmed", "PinapleBuffet", "AndroidVsiPhone", "WhatIsWindowsPhone",
+            "HarleyQuin"};
 
     final public static String[] TAG_CLOUD = new String[]{"grass",
             "growth", "business", "biology", "people", "nature", "symbol", "color", "flora",
             "technology", "research", "food", "equipment", "environment", "outdoors", "science",
-            "desktop", "medicine", "industry", "conceptual","seat", "furniture", "chair",
+            "desktop", "medicine", "industry", "conceptual", "seat", "furniture", "chair",
             "people", "museum", "room", "art", "one", "sculpture", "library", "adult",
             "indoors", "vintage", "no person", "old", "sofa", "bench", "mammal", "easy chair",
-            "city","moon", "winter", "Christmas", "snow", "galaxy", "exploration", "light",
+            "city", "moon", "winter", "Christmas", "snow", "galaxy", "exploration", "light",
             "astronomy", "space", "midnight", "science", "planet", "no person", "sky", "dark",
             "fantasy", "illustration", "desktop", "nature", "spacecraft"};
 
-    public static Dump createFakeDump(DatabaseHandler databaseHandler){
-        int numOfWallpapers = 50 + (int)(Math.random()*50);
+    /**
+     * Create a Dump object. Unlike {@link #createFakeDump(DatabaseHandler) createFakeDump}
+     * the Wallpapers created for the Dump are *not* added to the database
+     * @return the created fake Dump
+     */
+    public static Dump createFakeDump() {
+        return createFakeDump(null);
+    }
+
+    /**
+     * Create a Dump object. Unlike {@link #createFakeDump(DatabaseHandler) createFakeDump}
+     * the Wallpapers created for the Dump are *not* added to the database
+     * @param numberOfWallpapers the number of wallpapers the dump should contain
+     * @return the created fake Dump
+     */
+    public static Dump createFakeDump(int numberOfWallpapers) {
+        return createFakeDump(null, numberOfWallpapers);
+    }
+
+    /**
+     * Create a Dump object. Unlike {@link #createFakeDump() createFakeDump}
+     * the Wallpapers created for the Dump are added to the database
+     * @return the created fake Dump
+     */
+    public static Dump createFakeDump(DatabaseHandler databaseHandler) {
+        int numOfWallpapers = 50 + (int) (Math.random() * 50);
         return createFakeDump(databaseHandler, numOfWallpapers);
     }
 
-    public static Dump createFakeDump(DatabaseHandler databaseHandler, int numOfWallpapers){
+    /**
+     * Create a Dump object. Unlike {@link #createFakeDump() createFakeDump}
+     * the Wallpapers created for the Dump are added to the database
+     * @param numOfWallpapers the number of wallpapers the dump should contain
+     * @return the created fake Dump
+     */
+    public static Dump createFakeDump(DatabaseHandler databaseHandler, int numOfWallpapers) {
         Dump dump = new Dump();
 
-        dump.setDumpId(DUMP_IDS[(int)(Math.random()*DUMP_IDS.length)]);
-        dump.setUploadedBy(UPLOADERS[(int)(Math.random()*UPLOADERS.length)]);
-        dump.setTimestamp(System.currentTimeMillis()-(long)(Math.random()*10000000000L));
-        dump.setIsNSFW(Math.round(Math.random())==1);
+        dump.setDumpId(DUMP_IDS[(int) (Math.random() * DUMP_IDS.length)]);
+        dump.setUploadedBy(UPLOADERS[(int) (Math.random() * UPLOADERS.length)]);
+        dump.setTimestamp(System.currentTimeMillis() - (long) (Math.random() * 10000000000L));
+        dump.setIsNSFW(Math.round(Math.random()) == 1);
 
         List<String> wallpapers = new LinkedList<>();
 
-        for(int f = 0; f < numOfWallpapers; f++){
+        for (int f = 0; f < numOfWallpapers; f++) {
 
             Wallpaper wallpaper = createFakeWallpaper();
-            databaseHandler.addToWallpaperTable(wallpaper);
+            if (databaseHandler != null) {
+                databaseHandler.addToWallpaperTable(wallpaper);
+            }
             wallpapers.add(wallpaper.getImageId());
         }
         dump.setImages(wallpapers);
@@ -54,16 +92,16 @@ public class FakeData {
         return dump;
     }
 
-    public static Wallpaper createFakeWallpaper(){
+    public static Wallpaper createFakeWallpaper() {
         List<String> tags = new LinkedList<>();
 
-        for(int i = 0; i < 10; i++){
-            tags.add(TAG_CLOUD[(int)(Math.random()*TAG_CLOUD.length)]);
+        for (int i = 0; i < 10; i++) {
+            tags.add(TAG_CLOUD[(int) (Math.random() * TAG_CLOUD.length)]);
         }
 
         Wallpaper wallpaper = new Wallpaper();
-        wallpaper.setIsNSFW(Math.round(Math.random())==1);
-        wallpaper.setImageId(IMAGE_IDS[(int)(Math.random()*IMAGE_IDS.length)]);
+        wallpaper.setIsNSFW(Math.round(Math.random()) == 1);
+        wallpaper.setImageId(IMAGE_IDS[(int) (Math.random() * IMAGE_IDS.length)]);
         wallpaper.setTags(tags);
 
         return wallpaper;

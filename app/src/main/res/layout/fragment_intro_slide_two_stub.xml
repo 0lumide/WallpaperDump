@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <ImageView
+        android:id="@+id/image_alarm"
+        android:layout_centerHorizontal="true"
+        android:layout_width="340dp"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:layout_above="@+id/switch_enabled"
+        android:contentDescription="@string/image_alarm_description"
+        android:src="@drawable/alarm" />
+    <ImageView
+        android:id="@+id/image_tiny_octopus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:layout_centerHorizontal="true"
+        android:paddingStart="180dp"
+        android:paddingLeft="180dp"
+        android:paddingEnd="0dp"
+        android:paddingRight="0dp"
+        android:layout_alignBottom="@+id/image_alarm"
+        android:contentDescription="@string/image_tiny_octopus_description"
+        android:src="@drawable/tiny_octopus" />
+    <Switch
+        android:id="@+id/switch_enabled"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+</RelativeLayout>

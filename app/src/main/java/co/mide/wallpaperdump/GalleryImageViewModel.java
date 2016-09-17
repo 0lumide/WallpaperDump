@@ -20,27 +20,23 @@ public class GalleryImageViewModel extends BaseObservable {
     PhotoViewAttacher.OnViewTapListener viewTapListener;
     Wallpaper wallpaper;
 
-    public GalleryImageViewModel(@NonNull final GalleryViewModel galleryViewModel, @NonNull Wallpaper wallpaper){
+    public GalleryImageViewModel(@NonNull final GalleryViewModel galleryViewModel,
+                                 @NonNull Wallpaper wallpaper) {
         //noinspection ConstantConditions
-        if(galleryViewModel == null)
+        if (galleryViewModel == null)
             throw new IllegalArgumentException("galleryViewModel cannot be null");
         //noinspection ConstantConditions
-        if(wallpaper == null)
+        if (wallpaper == null)
             throw new IllegalArgumentException("wallpaper cannot be null");
 
         this.wallpaper = wallpaper;
 
-        viewTapListener = new PhotoViewAttacher.OnViewTapListener() {
-            @Override
-            public void onViewTap(View view, float x, float y) {
-                galleryViewModel.toggleShowToolbar();
-            }
-        };
+        viewTapListener = (View view, float x, float y) -> galleryViewModel.toggleShowToolbar();
     }
 
     @BindingAdapter("setImage")
     @SuppressWarnings("unused")
-    public static void loadImage(PhotoView photoView, String imageId){
+    public static void loadImage(PhotoView photoView, String imageId) {
         Glide.with(photoView.getContext())
                 .load(ImgurUtil.imageLinkFromId(imageId))
                 .into(photoView);
@@ -48,10 +44,14 @@ public class GalleryImageViewModel extends BaseObservable {
 
     @Bindable
     @SuppressWarnings("unused")
-    public String getImageId(){
+    public String getImageId() {
         return wallpaper.getImageId();
     }
 
+    /**
+     * Method bound to ViewPager onPageSelected callback
+     */
+    @SuppressWarnings("unused")
     public PhotoViewAttacher.OnViewTapListener getOnViewTapListener() {
         return viewTapListener;
     }

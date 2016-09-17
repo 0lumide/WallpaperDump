@@ -58,9 +58,9 @@ public class Wallpaper  {
             return false;
         }
         Wallpaper wallpaper = (Wallpaper) o;
-        return Objects.equals(imageId, wallpaper.imageId) &&
-                Objects.equals(isNSFW, wallpaper.isNSFW) &&
-                Objects.equals(tags, wallpaper.tags);
+        return Objects.equals(imageId, wallpaper.imageId)
+                && Objects.equals(isNSFW, wallpaper.isNSFW)
+                && Objects.equals(tags, wallpaper.tags);
     }
 
     @Override

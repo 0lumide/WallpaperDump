@@ -1,7 +1,8 @@
 package co.mide.wallpaperdump.view;
 import android.app.Activity;
-import android.app.WallpaperManager;
+import android.content.Intent;
 import android.databinding.DataBindingUtil;
+import android.support.v4.util.Pair;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
@@ -10,6 +11,11 @@ import co.mide.wallpaperdump.R;
 import co.mide.wallpaperdump.databinding.LayoutDumpCardBinding;
 import co.mide.wallpaperdump.db.DatabaseHandler;
 import co.mide.wallpaperdump.model.Dump;
+import rx.Observable;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.subjects.PublishSubject;
+import rx.subscriptions.CompositeSubscription;
 
 
 /**
@@ -17,12 +23,12 @@ import co.mide.wallpaperdump.model.Dump;
  */
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewBindingHolder> {
     Activity activity;
-    WallpaperManager wallpaperManager;
     DatabaseHandler databaseHandler;
+    private final CompositeSubscription subscriptions = new CompositeSubscription();
+    PublishSubject<Pair<Intent, Pair[]>> launchActivitySubject = PublishSubject.create();
 
     public RecyclerAdapter(Activity activity, DatabaseHandler databaseHandler) {
         this.activity = activity;
-        wallpaperManager = WallpaperManager.getInstance(activity);
         this.databaseHandler = databaseHandler;
     }
 
@@ -38,13 +44,35 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewBi
 
     @Override
     public void onBindViewHolder(final ViewBindingHolder viewBindingHolder, int position) {
-        final int width = wallpaperManager.getDesiredMinimumWidth();
-        final int height = wallpaperManager.getDesiredMinimumHeight();
         final int actualPosition = databaseHandler.getDumpCount() - 1 - position;
         Dump dump = databaseHandler.getDump(actualPosition);
         DumpCardViewModel viewModel = new DumpCardViewModel(activity, dump, actualPosition);
-        viewBindingHolder.setBindingDump(viewModel);
-        final String imageBig = String.format("http://api.wallpaperdumps.com/v1/image/%dx%d/%s", width, height, dump.getImages().get(0));
+        viewBindingHolder.setBindingViewModel(viewModel);
+
+        //un-subscribe previous subscription
+        Subscription subscription = viewBindingHolder.subscription;
+        if (subscription != null && !subscription.isUnsubscribed()) {
+            subscription.unsubscribe();
+            subscriptions.remove(subscription);
+        }
+
+        //subscribe to launch activity observable and call onNext
+        subscription = viewModel.getLaunchActivityObservable()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(launchActivitySubject::onNext);
+
+        //Add the subscription to the ViewHolder and composite so it can be un-subscribed later
+        viewBindingHolder.setSubscription(subscription);
+        subscriptions.add(subscription);
+    }
+
+    public Observable getLaunchActivityObservable() {
+        return launchActivitySubject;
+    }
+
+    @Override
+    public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
+        subscriptions.clear();
     }
 
     @Override
@@ -52,14 +80,19 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewBi
         return databaseHandler.getDumpCount();
     }
 
-    public static class ViewBindingHolder extends RecyclerView.ViewHolder{
+    public static class ViewBindingHolder extends RecyclerView.ViewHolder {
         private LayoutDumpCardBinding binding;
+        private Subscription subscription;
 
-        public void setBindingDump(DumpCardViewModel viewModel){
+        public void setBindingViewModel(DumpCardViewModel viewModel) {
             binding.setViewModel(viewModel);
         }
 
-        public ViewBindingHolder(LayoutDumpCardBinding binding){
+        public void setSubscription(Subscription subscription) {
+            this.subscription = subscription;
+        }
+
+        public ViewBindingHolder(LayoutDumpCardBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }

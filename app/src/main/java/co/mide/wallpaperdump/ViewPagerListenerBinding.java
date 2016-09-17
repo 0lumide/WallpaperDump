@@ -11,6 +11,10 @@ import android.support.v4.view.ViewPager;
  * http://stackoverflow.com/a/39233833/2057884
  */
 public class ViewPagerListenerBinding {
+    private ViewPagerListenerBinding() {
+
+    }
+
     public interface OnPageScrollStateChanged {
         void onPageScrollStateChanged(int state);
     }
@@ -23,9 +27,11 @@ public class ViewPagerListenerBinding {
         void onPageSelected(int position);
     }
 
-    @BindingAdapter(value = {"android:onPageScrollStateChanged",
+    @BindingAdapter(value = {
+            "android:onPageScrollStateChanged",
             "android:onPageScrolled",
-            "android:onPageSelected"}, requireAll=false)
+            "android:onPageSelected"}, requireAll = false)
+    @SuppressWarnings("unused")
     public static void setViewPagerListeners(ViewPager view,
                                              final OnPageScrollStateChanged scrollStateChanged,
                                              final OnPageScrolled scrolled,
@@ -41,9 +47,9 @@ public class ViewPagerListenerBinding {
                 }
 
                 @Override
-                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                public void onPageScrolled(int pos, float posOffset, int posOffsetPixels) {
                     if (scrolled != null) {
-                        scrolled.onPageScrolled(position, positionOffset, positionOffsetPixels);
+                        scrolled.onPageScrolled(pos, posOffset, posOffsetPixels);
                     }
                 }
 

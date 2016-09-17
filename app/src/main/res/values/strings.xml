@@ -102,4 +102,45 @@
     <string name="title_activity_blacklist">Blacklist</string>
     <string name="title_activity_gallery">Gallery</string>
     <string name="title_activity_delete">Delete</string>
+
+    <!--Slide One Strings-->
+    <string name="slide_one_title">Banana for scale&#8230;</string>
+    <string name="slide_one_second_title">guitar for temperature</string>
+    <string name="slide_one_description">
+        "Wallpaper dump is an awesome wallpaper "
+        "changing app powered by the up-votes of the imgur community"
+    </string>
+    <string name="image_banana_description">
+        "Image of a banana"
+    </string>
+    <string name="image_fork_description">
+        "Image of a fork with macaroni on the end"
+    </string>
+    <string name="image_guitar_description">
+        "Image of a black guitar"
+    </string>
+
+    <!--Slide Two Strings-->
+    <string name="slide_two_title">Auto changing wallpapers</string>
+    <string name="slide_two_description">
+        "When enabled, your wallpaper auto-magically changes periodically"
+    </string>
+    <string name="image_alarm_description">
+        "Image of an alarm clock"
+    </string>
+    <string name="image_tiny_octopus_description">
+        "Image of a tiny octopus"
+    </string>
+
+    <!--Slide Three Strings-->
+    <string name="slide_three_title">All done</string>
+    <string name="slide_three_description">
+        "Congrats on  making your device more awesome!"
+    </string>
+    <string name="image_disco_description">
+        "Image of a disco ball"
+    </string>
+    <string name="image_cera_description">
+        "Image of a dancing disco man wearing a red beanie"
+    </string>
 </resources>

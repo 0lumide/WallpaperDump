@@ -30,7 +30,7 @@ public class ViewPagerAdapter extends PagerAdapter {
         currentViews = new HashMap<>();
     }
 
-    public View getCurrentView(int index){
+    public View getCurrentView(int index) {
         return currentViews.get(index);
     }
 
@@ -42,7 +42,8 @@ public class ViewPagerAdapter extends PagerAdapter {
         LayoutInflater inflater = LayoutInflater.from(collection.getContext());
 
         Wallpaper wallpaper = databaseHandler.getWallpaper(dump.getImages().get(position));
-        GalleryImageViewModel galleryImageViewModel = new GalleryImageViewModel(galleryViewModel, wallpaper);
+        GalleryImageViewModel galleryImageViewModel =
+                new GalleryImageViewModel(galleryViewModel, wallpaper);
 
         PhotoViewBinding binding = PhotoViewBinding.inflate(inflater, collection, false);
         binding.setViewModel(galleryImageViewModel);

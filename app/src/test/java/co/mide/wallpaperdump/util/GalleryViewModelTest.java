@@ -21,12 +21,12 @@ public class GalleryViewModelTest {
     GalleryViewModel galleryViewModel;
 
     @Before
-    public void setUp() throws Exception{
+    public void setUp() throws Exception {
         galleryViewModel = new GalleryViewModel(1, FakeData.createFakeDump(2));
     }
 
     @Test
-    public void test_invalid_constructor_arguments() throws Exception{
+    public void test_invalid_constructor_arguments() throws Exception {
         exception.expect(IllegalArgumentException.class);
         new GalleryViewModel(0, FakeData.createFakeDump(1));
 

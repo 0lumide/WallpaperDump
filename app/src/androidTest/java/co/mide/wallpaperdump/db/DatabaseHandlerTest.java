@@ -11,6 +11,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Random;
+
 import co.mide.wallpaperdump.FakeData;
 import co.mide.wallpaperdump.model.Dump;
 import co.mide.wallpaperdump.model.Wallpaper;
@@ -25,8 +27,10 @@ public class DatabaseHandlerTest {
     DatabaseHandler databaseHandler;
 
     @Before
-    public void setUp() throws Exception{
+    public void setUp() throws Exception {
         databaseHandler = DatabaseHandler.getInstance(InstrumentationRegistry.getTargetContext());
+        databaseHandler.deleteAllDumpTableRows();
+        databaseHandler.deleteAllWallpaperTableRows();
     }
 
     @After
@@ -36,7 +40,23 @@ public class DatabaseHandlerTest {
     }
 
     @Test
-    public void test_database_count() throws Exception{
+    @Ignore
+    public void test_retrieval_time() throws Exception {
+//        RecyclerAdapter recyclerAdapter = new Re
+        int dumpCount = databaseHandler.getDumpCount();
+        Random random = new Random();
+        long startTime = System.currentTimeMillis();
+        for (int i = 0; i < 1000; i++) {
+            int index = random.nextInt(dumpCount);
+            Dump dump = databaseHandler.getDump(index);
+        }
+        long averageTime = (System.currentTimeMillis() - startTime) / 1000;
+        System.out.println(averageTime);
+        Assert.assertEquals(averageTime, 10);
+    }
+
+    @Test
+    public void test_database_count() throws Exception {
         int startCount = databaseHandler.getDumpCount();
 
         databaseHandler.addToDumpTable(new Dump());
@@ -46,7 +66,7 @@ public class DatabaseHandlerTest {
     }
 
     @Test
-    public void test_add_dump_to_database(){
+    public void test_add_dump_to_database() {
         Dump dump = FakeData.createFakeDump(databaseHandler, 1);
 
         databaseHandler.addToDumpTable(dump);
@@ -61,7 +81,7 @@ public class DatabaseHandlerTest {
     }
 
     @Test
-    public void test_add_wallpaper_to_database(){
+    public void test_add_wallpaper_to_database() {
         Wallpaper wallpaper = FakeData.createFakeWallpaper();
 
         databaseHandler.addToWallpaperTable(wallpaper);
@@ -79,7 +99,7 @@ public class DatabaseHandlerTest {
      * It used to have problems parsing true values
      */
     @Test
-    public void test_retrieve_wallpaper_boolean_parsing(){
+    public void test_retrieve_wallpaper_boolean_parsing() {
         Wallpaper wallpaper = FakeData.createFakeWallpaper();
         wallpaper.setIsNSFW(true);
 
@@ -94,7 +114,7 @@ public class DatabaseHandlerTest {
      * It used to have problems parsing true values
      */
     @Test
-    public void test_retrieve_dump_boolean_parsing(){
+    public void test_retrieve_dump_boolean_parsing() {
         Dump dump = FakeData.createFakeDump(databaseHandler, 1);
         dump.setIsNSFW(true);
         databaseHandler.addToDumpTable(dump);

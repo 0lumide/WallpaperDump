@@ -2,37 +2,46 @@ package co.mide.wallpaperdump;
 
 import android.databinding.BaseObservable;
 import android.databinding.Bindable;
+import android.support.annotation.NonNull;
 
 import co.mide.wallpaperdump.model.Dump;
+import rx.Observable;
+import rx.subjects.BehaviorSubject;
 
 /**
  * View model for the gallery
  */
-public class GalleryViewModel extends BaseObservable{
+public class GalleryViewModel extends BaseObservable {
     int currentPageNum;
+    boolean toolbarIsVisibile = true;
     Dump dump;
-    ToolbarToggler toolbarToggler;
+    @NonNull BehaviorSubject<Boolean> toggleToolbarVisibilityObservable
+            = BehaviorSubject.create(toolbarIsVisibile);
 
     /**
      * @param currentPage is not zero based. The first page is 1 e.t.c
      * @param dump The model the view is representing
      */
-    public GalleryViewModel(int currentPage, Dump dump, ToolbarToggler toolbarToggler){
-        if(currentPage <= 0){
+    public GalleryViewModel(int currentPage, @NonNull Dump dump) {
+        if (currentPage <= 0) {
             throw new IllegalArgumentException("currentPage must be positive");
         }
-        if(dump.getImages().size() <= 0){
+        //noinspection ConstantConditions
+        if (dump == null) {
+            throw new IllegalArgumentException("dump cannot be null");
+        }
+        if (dump.getImages().size() <= 0) {
             throw new IllegalArgumentException("number of pages must be positive");
         }
-        if(currentPage > dump.getImages().size()){
-            throw new IllegalArgumentException("currentPage cannot be more than the number of pages");
+        if (currentPage > dump.getImages().size()) {
+            throw new IllegalArgumentException("currentPage must be more than the number of pages");
         }
         this.currentPageNum = currentPage;
         this.dump = dump;
-        this.toolbarToggler = toolbarToggler;
     }
 
-    public Dump getDump(){
+    @NonNull
+    public Dump getDump() {
         return dump;
     }
 
@@ -56,19 +65,21 @@ public class GalleryViewModel extends BaseObservable{
     @SuppressWarnings("unused")
     public void onPageSelected(int position) {
         //position is zero based index, but page number isn't
-        setCurrentPageNum(position+1);
+        setCurrentPageNum(position + 1);
     }
 
-    public void setCurrentPageNum(int pageNum){
+    private void setCurrentPageNum(int pageNum) {
         currentPageNum = pageNum;
         notifyPropertyChanged(co.mide.wallpaperdump.BR.currentPageNum);
     }
 
-    public void toggleShowToolbar(){
-        toolbarToggler.toggleShowToolbar();
+    @NonNull
+    public Observable<Boolean> getToggleToolbarVisibilityObservable() {
+        return toggleToolbarVisibilityObservable;
     }
 
-    public interface ToolbarToggler{
-        void toggleShowToolbar();
+    public void toggleShowToolbar() {
+        toolbarIsVisibile = !toolbarIsVisibile;
+        toggleToolbarVisibilityObservable.onNext(toolbarIsVisibile);
     }
 }
